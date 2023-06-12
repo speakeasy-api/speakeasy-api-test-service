@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/pagination"
-	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/responseHeaders"
 	"log"
 	"net/http"
+
+	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/pagination"
+	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/responseHeaders"
+	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/retries"
 
 	"github.com/gorilla/mux"
 	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/auth"
@@ -22,6 +24,7 @@ func main() {
 	r.HandleFunc("/pagination/limitoffset/page", pagination.HandleLimitOffsetPage).Methods(http.MethodGet, http.MethodPut)
 	r.HandleFunc("/pagination/limitoffset/offset", pagination.HandleLimitOffsetOffset).Methods(http.MethodGet, http.MethodPut)
 	r.HandleFunc("/pagination/cursor", pagination.HandleCursor).Methods(http.MethodGet, http.MethodPut)
+	r.HandleFunc("/retries", retries.HandleRetries).Methods(http.MethodGet)
 
 	log.Println("Listening on :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
