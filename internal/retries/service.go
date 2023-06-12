@@ -1,11 +1,16 @@
 package retries
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 )
 
 var callCounts = map[string]int{}
+
+type retriesResponse struct {
+	Retries int `json:"retries"`
+}
 
 func HandleRetries(w http.ResponseWriter, r *http.Request) {
 	requestID := r.URL.Query().Get("request-id")
@@ -35,11 +40,22 @@ func HandleRetries(w http.ResponseWriter, r *http.Request) {
 	callCounts[requestID]++
 
 	if callCounts[requestID] < numRetries {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusServiceUnavailable)
 		_, _ = w.Write([]byte("request failed please retry"))
 		return
 	}
 
-	delete(callCounts, requestID)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	data, err := json.Marshal(retriesResponse{
+		Retries: callCounts[requestID],
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("failed to marshal response"))
+		return
+	}
+	_, _ = w.Write(data)
+
+	delete(callCounts, requestID)
 }
