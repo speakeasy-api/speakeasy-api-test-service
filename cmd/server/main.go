@@ -4,13 +4,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/pagination"
-	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/responseHeaders"
-	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/retries"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/responseHeaders"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/retries"
 
 	"github.com/gorilla/mux"
-	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/auth"
-	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/requestbody"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/auth"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/requestbody"
 )
 
 func main() {

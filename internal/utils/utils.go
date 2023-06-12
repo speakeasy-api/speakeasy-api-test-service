@@ -3,9 +3,10 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"github.com/speakeasy-api/speakeasy-auth-test-service/pkg/models"
 	"log"
 	"net/http"
+
+	"github.com/speakeasy-api/speakeasy-api-test-service/pkg/models"
 )
 
 var authError = errors.New("invalid auth")

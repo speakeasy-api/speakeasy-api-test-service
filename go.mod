@@ -1,4 +1,4 @@
-module github.com/speakeasy-api/speakeasy-auth-test-service
+module github.com/speakeasy-api/speakeasy-api-test-service
 
 go 1.19
 

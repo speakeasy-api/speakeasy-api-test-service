@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/speakeasy-api/speakeasy-auth-test-service/pkg/models"
+	"github.com/speakeasy-api/speakeasy-api-test-service/pkg/models"
 )
 
 var authError = errors.New("invalid auth")

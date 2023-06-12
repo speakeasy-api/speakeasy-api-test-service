@@ -2,11 +2,12 @@ package auth
 
 import (
 	"encoding/json"
-	"github.com/speakeasy-api/speakeasy-auth-test-service/internal/utils"
 	"io"
 	"net/http"
 
-	"github.com/speakeasy-api/speakeasy-auth-test-service/pkg/models"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/utils"
+
+	"github.com/speakeasy-api/speakeasy-api-test-service/pkg/models"
 )
 
 func HandleAuth(w http.ResponseWriter, r *http.Request) {
