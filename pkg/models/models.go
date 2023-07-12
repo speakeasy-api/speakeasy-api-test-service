@@ -1,11 +1,12 @@
 package models
 
-type ErrorMessage struct {
+type Error struct {
 	Message string `json:"message"`
+	Code    string `json:"code"`
 }
 
 type ErrorResponse struct {
-	Error ErrorMessage `json:"error"`
+	Error Error `json:"error"`
 }
 
 type HeaderAuth struct {

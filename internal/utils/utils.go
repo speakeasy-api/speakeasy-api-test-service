@@ -15,7 +15,7 @@ func HandleError(w http.ResponseWriter, err error) {
 	log.Println(err)
 
 	data, marshalErr := json.Marshal(models.ErrorResponse{
-		Error: models.ErrorMessage{
+		Error: models.Error{
 			Message: err.Error(),
 		},
 	})
