@@ -26,8 +26,8 @@ func HandleErrors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(statusCodeInt)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCodeInt)
 
 	if err := json.NewEncoder(w).Encode(models.Error{
 		Code:    statusCode,
