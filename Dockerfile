@@ -1,10 +1,10 @@
-## Build
-FROM golang as builder
+# syntax=docker/dockerfile:1
+
+FROM golang:1.20-alpine AS build-stage
 
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
+COPY go.mod go.sum ./
 
 RUN go mod download
 
@@ -12,15 +12,12 @@ COPY internal/ ./internal/
 COPY cmd/ ./cmd/
 COPY pkg/ ./pkg/
 
-RUN go build -o /server cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /server
 
-## Deploy
-FROM gcr.io/distroless/base-debian11
+FROM alpine:latest
 
 WORKDIR /
 
-COPY --from=builder /server /server
-
-EXPOSE 8080
+COPY --from=build-stage /server /server
 
 ENTRYPOINT ["/server"]
