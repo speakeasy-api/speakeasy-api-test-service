@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/auth"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/requestbody"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/acceptHeaders"
 )
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 	r.HandleFunc("/pagination/cursor", pagination.HandleCursor).Methods(http.MethodGet, http.MethodPut)
 	r.HandleFunc("/retries", retries.HandleRetries).Methods(http.MethodGet)
 	r.HandleFunc("/errors/{status_code}", errors.HandleErrors).Methods(http.MethodGet)
+	r.HandleFunc("/optional", acceptHeaders.HandleAcceptHeaderMultiplexing).Methods(http.MethodGet)
 
 	log.Println("Listening on :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
