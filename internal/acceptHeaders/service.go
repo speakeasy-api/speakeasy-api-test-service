@@ -2,16 +2,25 @@ package acceptHeaders
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"net/http"
+	"strings"
 
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/utils"
 )
 
+func headersContains(headers []string, toCheck string) bool {
+	for _, a := range headers {
+		if strings.Contains(a, toCheck) {
+			return true
+		}
+	}
+	return false
+}
+
 func HandleAcceptHeaderMultiplexing(w http.ResponseWriter, r *http.Request) {
 	var obj interface{}
-	if r.Header["Accept"] == "application/json" {
-		err := json.Unmarshal([]byte("{\"Obj1\":\"obj1\"}"), &obj)
+	if headersContains(r.Header["Accept"], "application/json") {
+		err := json.Unmarshal([]byte("{\"type\":\"obj1\", \"value\": \"JSON\"}"), &obj)
 		if err != nil {
 			utils.HandleError(w, err)
 			return
@@ -22,18 +31,10 @@ func HandleAcceptHeaderMultiplexing(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewEncoder(w).Encode(obj); err != nil {
 			utils.HandleError(w, err)
 		}
-	} else if r.Header["Accept"] == "application/xml" {
-		err := json.Unmarshal([]byte("{\"Obj2\":\"obj2\"}"), &obj)
-		if err != nil {
-			utils.HandleError(w, err)
-			return
-		}
-	
-		w.Header().Set("Content-Type", "application/xml; charset=utf-8")
-	
-		if err := xml.NewEncoder(w).Encode(obj); err != nil {
-			utils.HandleError(w, err)
-		}
+	} else if headersContains(r.Header["Accept"], "text/plain") {
+
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Write([]byte("Success"))
 	}
 
 }
