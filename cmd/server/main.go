@@ -4,15 +4,16 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/acceptHeaders"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/errors"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/readonlywriteonly"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/responseHeaders"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/retries"
 
 	"github.com/gorilla/mux"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/auth"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/requestbody"
-	"github.com/speakeasy-api/speakeasy-api-test-service/internal/acceptHeaders"
 )
 
 func main() {
@@ -29,6 +30,8 @@ func main() {
 	r.HandleFunc("/retries", retries.HandleRetries).Methods(http.MethodGet)
 	r.HandleFunc("/errors/{status_code}", errors.HandleErrors).Methods(http.MethodGet)
 	r.HandleFunc("/optional", acceptHeaders.HandleAcceptHeaderMultiplexing).Methods(http.MethodGet)
+	r.HandleFunc("/readonlyorwriteonly", readonlywriteonly.HandleReadOrWrite).Methods(http.MethodPost)
+	r.HandleFunc("/readonlyandwriteonly", readonlywriteonly.HandleReadAndWrite).Methods(http.MethodPost)
 
 	log.Println("Listening on :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
