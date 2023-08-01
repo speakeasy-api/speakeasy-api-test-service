@@ -32,10 +32,12 @@ func HandleReadOrWrite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req BasicObject
-	if err := json.Unmarshal(body, &req); err != nil {
-		utils.HandleError(w, err)
-		return
+	if len(body) > 0 {
+		var req BasicObject
+		if err := json.Unmarshal(body, &req); err != nil {
+			utils.HandleError(w, err)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
