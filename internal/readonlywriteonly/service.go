@@ -14,6 +14,8 @@ type BasicObject struct {
 	Num    float64 `json:"num"`
 }
 
+type WriteOnlyOutputObject struct {}
+
 type InputObject struct {
 	Num1 int64 `json:"num1"`
 	Num2 int64 `json:"num2"`
@@ -70,6 +72,26 @@ func HandleReadAndWrite(w http.ResponseWriter, r *http.Request) {
 		Num3: req.Num3,
 		Sum:  req.Num1 + req.Num2 + req.Num3,
 	}); err != nil {
+		utils.HandleError(w, err)
+	}
+}
+
+func HandleWriteOnlyOutput(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		utils.HandleError(w, err)
+		return
+	}
+
+	var req InputObject
+	if err := json.Unmarshal(body, &req); err != nil {
+		utils.HandleError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	if err := json.NewEncoder(w).Encode(WriteOnlyOutputObject{}); err != nil {
 		utils.HandleError(w, err)
 	}
 }

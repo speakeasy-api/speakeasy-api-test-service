@@ -32,6 +32,7 @@ func main() {
 	r.HandleFunc("/optional", acceptHeaders.HandleAcceptHeaderMultiplexing).Methods(http.MethodGet)
 	r.HandleFunc("/readonlyorwriteonly", readonlywriteonly.HandleReadOrWrite).Methods(http.MethodPost)
 	r.HandleFunc("/readonlyandwriteonly", readonlywriteonly.HandleReadAndWrite).Methods(http.MethodPost)
+	r.HandleFunc("/writeonlyoutput", readonlywriteonly.HandleWriteOnlyOutput).Methods(http.MethodPost)
 
 	log.Println("Listening on :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
