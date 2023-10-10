@@ -32,6 +32,7 @@ func HandleErrors(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(models.Error{
 		Code:    statusCode,
 		Message: "an error occurred",
+		Type:    "internal",
 	}); err != nil {
 		utils.HandleError(w, err)
 		return
