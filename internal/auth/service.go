@@ -2,7 +2,6 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -28,7 +27,4 @@ func HandleAuth(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, err)
 		return
 	}
-
-	w.Header().Set("content-type", "text/plain")
-	fmt.Fprintf(w, "ok")
 }
