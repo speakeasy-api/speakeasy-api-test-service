@@ -6,6 +6,7 @@ import (
 
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/acceptHeaders"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/errors"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/eventstreams"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/readonlywriteonly"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/responseHeaders"
@@ -33,6 +34,11 @@ func main() {
 	r.HandleFunc("/readonlyorwriteonly", readonlywriteonly.HandleReadOrWrite).Methods(http.MethodPost)
 	r.HandleFunc("/readonlyandwriteonly", readonlywriteonly.HandleReadAndWrite).Methods(http.MethodPost)
 	r.HandleFunc("/writeonlyoutput", readonlywriteonly.HandleWriteOnlyOutput).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/json", eventstreams.HandleEventStreamJSON).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/text", eventstreams.HandleEventStreamText).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/multiline", eventstreams.HandleEventStreamMultiLine).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/rich", eventstreams.HandleEventStreamRich).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/chat", eventstreams.HandleEventStreamChat).Methods(http.MethodPost)
 
 	log.Println("Listening on :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
