@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 
@@ -17,7 +18,11 @@ import (
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/requestbody"
 )
 
+var bindArg = flag.String("b", ":8080", "Bind address")
+
 func main() {
+	flag.Parse()
+
 	r := mux.NewRouter()
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("pong"))
@@ -40,8 +45,13 @@ func main() {
 	r.HandleFunc("/eventstreams/rich", eventstreams.HandleEventStreamRich).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/chat", eventstreams.HandleEventStreamChat).Methods(http.MethodPost)
 
-	log.Println("Listening on :8080")
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	bind := ":8080"
+	if bindArg != nil {
+		bind = *bindArg
+	}
+
+	log.Printf("Listening on %s\n", bind)
+	if err := http.ListenAndServe(bind, r); err != nil {
 		log.Fatal(err)
 	}
 }
