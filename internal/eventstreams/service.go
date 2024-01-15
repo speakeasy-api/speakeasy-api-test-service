@@ -1,0 +1,128 @@
+package eventstreams
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+)
+
+func pushEvents(rw http.ResponseWriter, events [][]string) {
+	for _, event := range events {
+		for _, line := range event {
+			fmt.Fprintln(rw, line)
+		}
+		fmt.Fprintln(rw, "")
+
+		if f, ok := rw.(http.Flusher); ok {
+			f.Flush()
+		}
+
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func HandleEventStreamJSON(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			`data: {"content": "Hello"}`,
+		},
+
+		{
+			`data: {"content": " "}`,
+		},
+
+		{
+			`data: {"content": "world"}`,
+		},
+
+		{
+			`data: {"content": "!"}`,
+		},
+	})
+}
+
+func HandleEventStreamText(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			`data: Hello`,
+		},
+
+		{
+			`data:  `,
+		},
+
+		{
+			`data: world`,
+		},
+
+		{
+			`data: !`,
+		},
+	})
+}
+
+func HandleEventStreamMultiLine(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			`data: YHOO`,
+			`data: +2`,
+			`data: 10`,
+		},
+	})
+}
+
+func HandleEventStreamRich(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			`id: job-1`,
+			`event: completion`,
+			`data: {"completion": "Hello", "stop_reason": null, "model": "jeeves-1"}`,
+		},
+
+		{
+			`event: heartbeat`,
+			`data: ping`,
+			`retry: 3000`,
+		},
+
+		{
+			`id: job-1`,
+			`event: completion`,
+			`data: {"completion": "world!", "stop_reason": "stop_sequence", "model": "jeeves-1"}`,
+		},
+	})
+}
+
+func HandleEventStreamChat(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			`data: {"content": "Hello"}`,
+		},
+
+		{
+			`data: {"content": " "}`,
+		},
+
+		{
+			`data: {"content": "world"}`,
+		},
+
+		{
+			`data: {"content": "!"}`,
+		},
+
+		{
+			`data: [DONE]`,
+		},
+	})
+}
