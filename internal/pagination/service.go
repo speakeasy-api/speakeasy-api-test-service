@@ -2,6 +2,7 @@ package pagination
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -18,8 +19,9 @@ type CursorRequest struct {
 }
 
 type PaginationResponse struct {
-	NumPages    int   `json:"numPages"`
-	ResultArray []int `json:"resultArray"`
+	NumPages    int     `json:"numPages"`
+	ResultArray []int   `json:"resultArray"`
+	Next        *string `json:"next"`
 }
 
 const total = 20
@@ -107,6 +109,41 @@ func HandleCursor(w http.ResponseWriter, r *http.Request) {
 
 	for i := cursor + 1; i < total && len(res.ResultArray) < 15; i++ {
 		res.ResultArray = append(res.ResultArray, i)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(res)
+	if err != nil {
+		w.WriteHeader(500)
+	}
+}
+
+func HandleURL(w http.ResponseWriter, r *http.Request) {
+	attemptsString := r.FormValue("attempts")
+	var attempts int
+	if attemptsString != "" {
+		var err error
+		attempts, err = strconv.Atoi(attemptsString)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte("attempts must be an integer"))
+			return
+		}
+	}
+
+	res := PaginationResponse{
+		NumPages:    0,
+		ResultArray: make([]int, 0),
+	}
+
+	if attempts > 0 {
+		baseURL := fmt.Sprintf("%s://%s%s", r.URL.Scheme, r.Host, r.URL.Path)
+		if r.URL.Scheme == "" { // Fallback if Scheme is not available
+			baseURL = fmt.Sprintf("http://%s%s", r.Host, r.URL.Path)
+		}
+
+		nextUrl := fmt.Sprintf("%s?attempts=%d", baseURL, attempts-1)
+		res.Next = &nextUrl
 	}
 
 	w.Header().Set("Content-Type", "application/json")
