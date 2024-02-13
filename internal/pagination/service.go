@@ -21,7 +21,7 @@ type CursorRequest struct {
 type PaginationResponse struct {
 	NumPages    int     `json:"numPages"`
 	ResultArray []int   `json:"resultArray"`
-	Next        *string `json:"next"`
+	Next        *string `json:"next,omitempty"`
 }
 
 const total = 20
