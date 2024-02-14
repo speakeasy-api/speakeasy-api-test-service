@@ -136,7 +136,7 @@ func HandleURL(w http.ResponseWriter, r *http.Request) {
 		ResultArray: make([]int, 0),
 	}
 
-	if attempts > 0 {
+	if attempts > 1 {
 		baseURL := fmt.Sprintf("%s://%s%s", r.URL.Scheme, r.Host, r.URL.Path)
 		if r.URL.Scheme == "" { // Fallback if Scheme is not available
 			baseURL = fmt.Sprintf("http://%s%s", r.Host, r.URL.Path)
