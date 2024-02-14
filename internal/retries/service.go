@@ -40,7 +40,7 @@ func HandleRetries(w http.ResponseWriter, r *http.Request) {
 	callCounts[requestID]++
 
 	if callCounts[requestID] < numRetries {
-		// static one second retry after timeout
+		// sets a static one second retry after timeout, the client will decide whether or not to respect it
 		w.Header().Set("Retry-After", "1")
 		w.WriteHeader(http.StatusServiceUnavailable)
 		_, _ = w.Write([]byte("request failed please retry"))
