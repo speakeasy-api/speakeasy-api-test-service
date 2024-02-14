@@ -15,6 +15,18 @@ type retriesResponse struct {
 func HandleRetries(w http.ResponseWriter, r *http.Request) {
 	requestID := r.URL.Query().Get("request-id")
 	numRetriesStr := r.URL.Query().Get("num-retries")
+	retryAfterVal := r.URL.Query().Get("retry-after-val")
+
+	retryAfter := 0
+	if retryAfterVal != "" {
+		var err error
+		retryAfter, err = strconv.Atoi(retryAfterVal)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte("retry-after-val must be an integer"))
+			return
+		}
+	}
 
 	numRetries := 3
 	if numRetriesStr != "" {
@@ -40,8 +52,9 @@ func HandleRetries(w http.ResponseWriter, r *http.Request) {
 	callCounts[requestID]++
 
 	if callCounts[requestID] < numRetries {
-		// sets a static one second retry after timeout, the client will decide whether or not to respect it
-		w.Header().Set("Retry-After", "1")
+		if retryAfter > 0 {
+			w.Header().Set("Retry-After", strconv.Itoa(retryAfter))
+		}
 		w.WriteHeader(http.StatusServiceUnavailable)
 		_, _ = w.Write([]byte("request failed please retry"))
 		return

@@ -120,6 +120,7 @@ func HandleCursor(w http.ResponseWriter, r *http.Request) {
 
 func HandleURL(w http.ResponseWriter, r *http.Request) {
 	attemptsString := r.FormValue("attempts")
+	isReferencePath := r.FormValue("is-reference-path")
 	var attempts int
 	if attemptsString != "" {
 		var err error
@@ -137,9 +138,15 @@ func HandleURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if attempts > 1 {
-		baseURL := fmt.Sprintf("%s://%s%s", r.URL.Scheme, r.Host, r.URL.Path)
+		baseURL := fmt.Sprintf("%s://%s", r.URL.Scheme, r.Host)
 		if r.URL.Scheme == "" { // Fallback if Scheme is not available
-			baseURL = fmt.Sprintf("http://%s%s", r.Host, r.URL.Path)
+			baseURL = fmt.Sprintf("http://%s", r.Host)
+		}
+
+		if isReferencePath == "true" {
+			baseURL = r.URL.Path
+		} else {
+			baseURL = fmt.Sprintf("%s%s", baseURL, r.URL.Path)
 		}
 
 		nextUrl := fmt.Sprintf("%s?attempts=%d", baseURL, attempts-1)
