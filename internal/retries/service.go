@@ -15,7 +15,6 @@ type retriesResponse struct {
 func HandleRetries(w http.ResponseWriter, r *http.Request) {
 	requestID := r.URL.Query().Get("request-id")
 	numRetriesStr := r.URL.Query().Get("num-retries")
-	includeHeaderTimeout := r.URL.Query().Get("included-header-timeout")
 
 	numRetries := 3
 	if numRetriesStr != "" {
@@ -24,17 +23,6 @@ func HandleRetries(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte("num-retries must be an integer"))
-			return
-		}
-	}
-
-	var headerTimeout int
-	if includeHeaderTimeout != "" {
-		var err error
-		headerTimeout, err = strconv.Atoi(includeHeaderTimeout)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte("included-header-timeout must be an integer"))
 			return
 		}
 	}
@@ -52,9 +40,8 @@ func HandleRetries(w http.ResponseWriter, r *http.Request) {
 	callCounts[requestID]++
 
 	if callCounts[requestID] < numRetries {
-		if headerTimeout > 0 {
-			w.Header().Set("Retry-After", strconv.Itoa(headerTimeout))
-		}
+		// static one second retry after timeout
+		w.Header().Set("Retry-After", 1)
 		w.WriteHeader(http.StatusServiceUnavailable)
 		_, _ = w.Write([]byte("request failed please retry"))
 		return
