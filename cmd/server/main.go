@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/acceptHeaders"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/clientcredentials"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/errors"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/eventstreams"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
@@ -47,6 +48,8 @@ func main() {
 	r.HandleFunc("/eventstreams/rich", eventstreams.HandleEventStreamRich).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/chat", eventstreams.HandleEventStreamChat).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/differentdataschemas", eventstreams.HandleEventStreamDifferentDataSchemas).Methods(http.MethodPost)
+	r.HandleFunc("/clientcredentials/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
+	r.HandleFunc("/clientcredentials/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
 
 	bind := ":8080"
 	if bindArg != nil {
