@@ -23,13 +23,9 @@ type NonNumericCursorRequest struct {
 }
 
 type PaginationResponse struct {
-<<<<<<< HEAD
-	NumPages    int     `json:"numPages"`
-	ResultArray []int   `json:"resultArray"`
-	Next        *string `json:"next,omitempty"`
-=======
 	NumPages    int           `json:"numPages"`
 	ResultArray []interface{} `json:"resultArray"`
+	Next        *string       `json:"next,omitempty"`
 }
 
 // Insecure reversable hashing for string cursors
@@ -38,7 +34,6 @@ func hash(s string) (int, error) {
 }
 func unhash(h int) string {
 	return strconv.Itoa(h)
->>>>>>> cf9ad59 (add endpoint to support non numeric cursor.)
 }
 
 const total = 20
@@ -151,7 +146,7 @@ func HandleURL(w http.ResponseWriter, r *http.Request) {
 
 	res := PaginationResponse{
 		NumPages:    0,
-		ResultArray: make([]int, 0),
+		ResultArray: make([]interface{}, 0),
 	}
 
 	if attempts > 1 {
@@ -184,7 +179,6 @@ func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&pagination); err != nil {
 		hasBody = false
 	}
-
 	cursor := getNonNumericValue(queryCursor, hasBody, pagination.Cursor)
 
 	res := PaginationResponse{
@@ -219,6 +213,10 @@ func getNonNumericValue(queryValue string, hasBody bool, paginationValue string)
 	if hasBody {
 		return paginationValue
 	} else {
-		return queryValue
+		if queryValue == "" {
+			return "-1"
+		} else {
+			return queryValue
+		}
 	}
 }
