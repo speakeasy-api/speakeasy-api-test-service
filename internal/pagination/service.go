@@ -17,9 +17,21 @@ type CursorRequest struct {
 	Cursor int `json:"cursor"`
 }
 
+type NonNumericCursorRequest struct {
+	Cursor string `json:"cursor"`
+}
+
 type PaginationResponse struct {
-	NumPages    int   `json:"numPages"`
-	ResultArray []int `json:"resultArray"`
+	NumPages    int           `json:"numPages"`
+	ResultArray []interface{} `json:"resultArray"`
+}
+
+// Insecure reversable hashing for string cursors
+func hash(s string) (int, error) {
+	return strconv.Atoi(s)
+}
+func unhash(h int) string {
+	return strconv.Itoa(h)
 }
 
 const total = 20
@@ -43,7 +55,7 @@ func HandleLimitOffsetPage(w http.ResponseWriter, r *http.Request) {
 
 	res := PaginationResponse{
 		NumPages:    int(math.Ceil(float64(total) / float64(limit))),
-		ResultArray: make([]int, 0),
+		ResultArray: make([]interface{}, 0),
 	}
 
 	for i := start; i < total && len(res.ResultArray) < limit; i++ {
@@ -75,7 +87,7 @@ func HandleLimitOffsetOffset(w http.ResponseWriter, r *http.Request) {
 
 	res := PaginationResponse{
 		NumPages:    int(math.Ceil(float64(total) / float64(limit))),
-		ResultArray: make([]int, 0),
+		ResultArray: make([]interface{}, 0),
 	}
 
 	for i := offset; i < total && len(res.ResultArray) < limit; i++ {
@@ -102,11 +114,37 @@ func HandleCursor(w http.ResponseWriter, r *http.Request) {
 
 	res := PaginationResponse{
 		NumPages:    0,
-		ResultArray: make([]int, 0),
+		ResultArray: make([]interface{}, 0),
 	}
 
 	for i := cursor + 1; i < total && len(res.ResultArray) < 15; i++ {
 		res.ResultArray = append(res.ResultArray, i)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(res)
+	if err != nil {
+		w.WriteHeader(500)
+	}
+}
+
+func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
+	queryCursor := r.FormValue("cursor")
+	var pagination NonNumericCursorRequest
+	hasBody := true
+	if err := json.NewDecoder(r.Body).Decode(&pagination); err != nil {
+		hasBody = false
+	}
+
+	cursor := getNonNumericValue(queryCursor, hasBody, pagination.Cursor)
+
+	res := PaginationResponse{
+		NumPages:    0,
+		ResultArray: make([]interface{}, 0),
+	}
+	var cursorI, _ = hash(cursor)
+	for i := cursorI + 1; i < total && len(res.ResultArray) < 15; i++ {
+		res.ResultArray = append(res.ResultArray, unhash(i))
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -125,5 +163,13 @@ func getValue(queryValue string, hasBody bool, paginationValue int) int {
 			return 0
 		}
 		return value
+	}
+}
+
+func getNonNumericValue(queryValue string, hasBody bool, paginationValue string) string {
+	if hasBody {
+		return paginationValue
+	} else {
+		return queryValue
 	}
 }
