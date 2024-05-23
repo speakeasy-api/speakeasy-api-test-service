@@ -9,6 +9,7 @@ import (
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/clientcredentials"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/errors"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/eventstreams"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/middleware"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/readonlywriteonly"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/responseHeaders"
@@ -52,13 +53,15 @@ func main() {
 	r.HandleFunc("/clientcredentials/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
 
+	handler := middleware.Fault(r)
+
 	bind := ":8080"
 	if bindArg != nil {
 		bind = *bindArg
 	}
 
 	log.Printf("Listening on %s\n", bind)
-	if err := http.ListenAndServe(bind, r); err != nil {
+	if err := http.ListenAndServe(bind, handler); err != nil {
 		log.Fatal(err)
 	}
 }
