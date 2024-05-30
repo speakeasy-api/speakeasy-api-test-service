@@ -12,6 +12,7 @@ import (
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/middleware"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/readonlywriteonly"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/reflect"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/responseHeaders"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/retries"
 
@@ -52,6 +53,7 @@ func main() {
 	r.HandleFunc("/eventstreams/differentdataschemas", eventstreams.HandleEventStreamDifferentDataSchemas).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
+	r.HandleFunc("/reflect", reflect.HandleReflect).Methods(http.MethodPost)
 
 	handler := middleware.Fault(r)
 
