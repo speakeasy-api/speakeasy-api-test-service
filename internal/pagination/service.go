@@ -28,6 +28,15 @@ type PaginationResponse struct {
 	Next        *string       `json:"next,omitempty"`
 }
 
+type PageInfo struct {
+	NumPages int     `json:"numPages"`
+	Next     *string `json:"next,omitempty"`
+}
+type PaginationResponseDeep struct {
+	ResultArray []interface{} `json:"resultArray"`
+	PageInfo    PageInfo      `json:"pageInfo"`
+}
+
 // Insecure reversable hashing for string cursors
 func hash(s string) (int, error) {
 	return strconv.Atoi(s)
@@ -188,6 +197,41 @@ func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
 	var cursorI, _ = hash(cursor)
 	for i := cursorI + 1; i < total && len(res.ResultArray) < 15; i++ {
 		res.ResultArray = append(res.ResultArray, unhash(i))
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(res)
+	if err != nil {
+		w.WriteHeader(500)
+	}
+}
+
+func HandleLimitOffsetDeepOutputsPage(w http.ResponseWriter, r *http.Request) {
+	queryLimit := r.FormValue("limit")
+	queryPage := r.FormValue("page")
+
+	var pagination LimitOffsetRequest
+	hasBody := true
+	if err := json.NewDecoder(r.Body).Decode(&pagination); err != nil {
+		hasBody = false
+	}
+	limit := getValue(queryLimit, hasBody, pagination.Limit)
+	if limit == 0 {
+		limit = 20
+	}
+	page := getValue(queryPage, hasBody, pagination.Page)
+
+	start := (page - 1) * limit
+
+	res := PaginationResponseDeep{
+		PageInfo: PageInfo{
+			NumPages: int(math.Ceil(float64(total) / float64(limit))),
+		},
+		ResultArray: make([]interface{}, 0),
+	}
+
+	for i := start; i < total && len(res.ResultArray) < limit; i++ {
+		res.ResultArray = append(res.ResultArray, i)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
