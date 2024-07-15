@@ -3,6 +3,7 @@ package errors
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -29,11 +30,27 @@ func HandleErrors(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodeInt)
 
-	if err := json.NewEncoder(w).Encode(models.Error{
-		Code:    statusCode,
-		Message: "an error occurred",
-		Type:    "internal",
-	}); err != nil {
+	var res interface{}
+	if r.Method == http.MethodPost {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			utils.HandleError(w, err)
+			return
+		}
+
+		if err := json.Unmarshal(body, &res); err != nil {
+			utils.HandleError(w, err)
+			return
+		}
+	} else {
+		res = models.Error{
+			Code:    statusCode,
+			Message: "an error occurred",
+			Type:    "internal",
+		}
+	}
+
+	if err := json.NewEncoder(w).Encode(res); err != nil {
 		utils.HandleError(w, err)
 		return
 	}
