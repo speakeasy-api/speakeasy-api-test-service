@@ -51,6 +51,7 @@ func main() {
 	r.HandleFunc("/eventstreams/multiline", eventstreams.HandleEventStreamMultiLine).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/rich", eventstreams.HandleEventStreamRich).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/chat", eventstreams.HandleEventStreamChat).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/chat-chunked", eventstreams.HandleEventStreamChat).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/differentdataschemas", eventstreams.HandleEventStreamDifferentDataSchemas).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)

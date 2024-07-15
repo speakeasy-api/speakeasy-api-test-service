@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+func pushChunks(rw http.ResponseWriter, chunks []string) {
+	for _, chunk := range chunks {
+		fmt.Fprintln(rw, chunk)
+
+		if f, ok := rw.(http.Flusher); ok {
+			f.Flush()
+		}
+
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
 func pushEvents(rw http.ResponseWriter, events [][]string) {
 	for _, event := range events {
 		for _, line := range event {
@@ -124,6 +136,18 @@ func HandleEventStreamChat(rw http.ResponseWriter, _ *http.Request) {
 		{
 			`data: [DONE]`,
 		},
+	})
+}
+
+func HandleEventStreamChatChunked(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushChunks(rw, []string{
+		"data: {\"content\": ",
+		"\"Hello\"}\n\ndata: {\"content\": \" \"}",
+		"data: {\"content\": \"world\"}",
+		"data: {\"content\": \"!\"}\n\ndata: [DONE]\n",
+		"\ndata: {\"content\": \"Post sentinel data\"}\n\n",
 	})
 }
 
