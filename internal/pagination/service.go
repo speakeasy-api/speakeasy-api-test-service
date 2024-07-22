@@ -158,6 +158,11 @@ func HandleURL(w http.ResponseWriter, r *http.Request) {
 		ResultArray: make([]interface{}, 0),
 	}
 
+	// Return 9, 6, then 3 results for 18 total results.
+	for i := 0; i < total && len(res.ResultArray) < (attempts*3); i++ {
+		res.ResultArray = append(res.ResultArray, i)
+	}
+
 	if attempts > 1 {
 		baseURL := fmt.Sprintf("%s://%s", r.URL.Scheme, r.Host)
 		if r.URL.Scheme == "" { // Fallback if Scheme is not available
