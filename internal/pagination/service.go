@@ -158,8 +158,8 @@ func HandleURL(w http.ResponseWriter, r *http.Request) {
 		ResultArray: make([]interface{}, 0),
 	}
 
-	// Just always return the same 20 results
-	for i := 0; i < total; i++ {
+	// Return 9, 6, then 3 results for 18 total results.
+	for i := 0; i < total && len(res.ResultArray) < (attempts*3); i++ {
 		res.ResultArray = append(res.ResultArray, i)
 	}
 
