@@ -55,6 +55,8 @@ func main() {
 	r.HandleFunc("/eventstreams/differentdataschemas", eventstreams.HandleEventStreamDifferentDataSchemas).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
+	r.HandleFunc("/clientcredentials/alt/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
+	r.HandleFunc("/clientcredentials/alt/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
 	r.HandleFunc("/reflect", reflect.HandleReflect).Methods(http.MethodPost)
 
 	handler := middleware.Fault(r)
