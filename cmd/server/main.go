@@ -9,6 +9,7 @@ import (
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/clientcredentials"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/errors"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/eventstreams"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/method"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/middleware"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/readonlywriteonly"
@@ -58,6 +59,14 @@ func main() {
 	r.HandleFunc("/clientcredentials/alt/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/alt/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
 	r.HandleFunc("/reflect", reflect.HandleReflect).Methods(http.MethodPost)
+	r.HandleFunc("/method/delete", method.HandleDelete).Methods(http.MethodDelete)
+	r.HandleFunc("/method/get", method.HandleGet).Methods(http.MethodGet)
+	r.HandleFunc("/method/head", method.HandleHead).Methods(http.MethodHead)
+	r.HandleFunc("/method/options", method.HandleOptions).Methods(http.MethodOptions)
+	r.HandleFunc("/method/patch", method.HandlePatch).Methods(http.MethodPatch)
+	r.HandleFunc("/method/post", method.HandlePost).Methods(http.MethodPost)
+	r.HandleFunc("/method/put", method.HandlePut).Methods(http.MethodPut)
+	r.HandleFunc("/method/trace", method.HandleTrace).Methods(http.MethodTrace)
 
 	handler := middleware.Fault(r)
 
