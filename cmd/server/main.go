@@ -32,6 +32,7 @@ func main() {
 		_, _ = w.Write([]byte("pong"))
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/auth", auth.HandleAuth).Methods(http.MethodPost)
+	r.HandleFunc("/auth/customsecurity/{customSchemeType}", auth.HandleCustomAuth).Methods(http.MethodGet)
 	r.HandleFunc("/requestbody", requestbody.HandleRequestBody).Methods(http.MethodPost)
 	r.HandleFunc("/vendorjson", responseHeaders.HandleVendorJsonResponseHeaders).Methods(http.MethodGet)
 	r.HandleFunc("/pagination/limitoffset/page", pagination.HandleLimitOffsetPage).Methods(http.MethodGet, http.MethodPut)
