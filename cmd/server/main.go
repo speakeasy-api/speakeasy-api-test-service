@@ -70,6 +70,7 @@ func main() {
 	r.HandleFunc("/method/trace", method.HandleTrace).Methods(http.MethodTrace)
 
 	handler := middleware.Fault(r)
+	handler = middleware.Teapot(handler)
 
 	bind := ":8080"
 	if bindArg != nil {
