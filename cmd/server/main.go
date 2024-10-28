@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/acceptHeaders"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/clientcredentials"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/ecommerce"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/errors"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/eventstreams"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/method"
@@ -28,11 +30,12 @@ func main() {
 	flag.Parse()
 
 	r := mux.NewRouter()
+	r.HandleFunc("/oauth2/token", auth.HandleOAuth2).Methods(http.MethodPost)
+	r.HandleFunc("/auth", auth.HandleAuth).Methods(http.MethodPost)
+	r.HandleFunc("/auth/customsecurity/{customSchemeType}", auth.HandleCustomAuth).Methods(http.MethodGet)
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("pong"))
 	}).Methods(http.MethodGet)
-	r.HandleFunc("/auth", auth.HandleAuth).Methods(http.MethodPost)
-	r.HandleFunc("/auth/customsecurity/{customSchemeType}", auth.HandleCustomAuth).Methods(http.MethodGet)
 	r.HandleFunc("/requestbody", requestbody.HandleRequestBody).Methods(http.MethodPost)
 	r.HandleFunc("/vendorjson", responseHeaders.HandleVendorJsonResponseHeaders).Methods(http.MethodGet)
 	r.HandleFunc("/pagination/limitoffset/page", pagination.HandleLimitOffsetPage).Methods(http.MethodGet, http.MethodPut)
@@ -69,6 +72,14 @@ func main() {
 	r.HandleFunc("/method/put", method.HandlePut).Methods(http.MethodPut)
 	r.HandleFunc("/method/trace", method.HandleTrace).Methods(http.MethodTrace)
 
+	oauth2router := r.NewRoute().Subrouter()
+	oauth2router.Use(middleware.OAuth2)
+	oauth2router.HandleFunc("/ecommerce/products", ecommerce.HandleListProducts).Methods(http.MethodGet)
+	oauth2router.HandleFunc("/ecommerce/products", ecommerce.HandleCreateProduct).Methods(http.MethodPost)
+	oauth2router.HandleFunc("/ecommerce/products/{id}", ecommerce.HandleFetchProduct).Methods(http.MethodGet)
+	oauth2router.HandleFunc("/ecommerce/products/{id}", ecommerce.HandleDeleteProduct).Methods(http.MethodDelete)
+	oauth2router.HandleFunc("/ecommerce/products/{id}/inventory", ecommerce.HandleUpdateProductStock).Methods(http.MethodPut)
+
 	handler := middleware.Fault(r)
 	handler = middleware.Teapot(handler)
 
@@ -76,6 +87,10 @@ func main() {
 	if bindArg != nil {
 		bind = *bindArg
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go auth.StartTokenDBCompaction(ctx)
 
 	log.Printf("Listening on %s\n", bind)
 	if err := http.ListenAndServe(bind, handler); err != nil {
