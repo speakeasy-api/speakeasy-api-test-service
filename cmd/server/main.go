@@ -30,6 +30,7 @@ func main() {
 	flag.Parse()
 
 	r := mux.NewRouter()
+	r.HandleFunc("/oauth2/token", auth.HandleOAuth2InspectToken).Methods(http.MethodGet)
 	r.HandleFunc("/oauth2/token", auth.HandleOAuth2).Methods(http.MethodPost)
 	r.HandleFunc("/auth", auth.HandleAuth).Methods(http.MethodPost)
 	r.HandleFunc("/auth/customsecurity/{customSchemeType}", auth.HandleCustomAuth).Methods(http.MethodGet)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -73,6 +74,38 @@ type OAuth2TokenResponse struct {
 	RefreshToken string `json:"refresh_token,omitempty"`
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int    `json:"expires_in"`
+}
+
+func HandleOAuth2InspectToken(w http.ResponseWriter, r *http.Request) {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	w.Header().Set("Content-Type", "application/json")
+
+	authz := r.Header.Get("Authorization")
+	if authz == "" {
+		http.Error(w, `{"error": "unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	if !strings.HasPrefix(authz, "Bearer ") {
+		http.Error(w, `{"error": "invalid authorization"}`, http.StatusBadRequest)
+		return
+	}
+
+	token := authz[len("Bearer "):]
+	claims, err := ParseToken(token)
+	if err != nil {
+		http.Error(w, `{"error": "invalid token"}`, http.StatusBadRequest)
+		return
+	}
+
+	updatedExpiry := GetTokenExpiry(claims)
+
+	claims["exp"] = float64(updatedExpiry.Unix())
+
+	if err := enc.Encode(claims); err != nil {
+		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
+		return
+	}
 }
 
 func HandleOAuth2(w http.ResponseWriter, r *http.Request) {
@@ -165,6 +198,10 @@ func HandleOAuth2(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 	expires := now.Add(time.Hour)
+	forcedExpiry := r.Header.Get("x-oauth2-expire-at")
+	if exp, err := time.Parse(time.RFC3339, forcedExpiry); err == nil {
+		expires = exp
+	}
 
 	accessTokenID := gofakeit.UUID()
 	accessTokenClaims := jwt.MapClaims{
@@ -246,6 +283,24 @@ func RefreshToken(refreshClaims jwt.MapClaims) {
 	tokenID := refreshClaims["sub"].(string)
 	expiry := time.Now().Add(time.Hour)
 	tokenDB.Store(tokenID, expiry)
+}
+
+func GetTokenExpiry(tokenClaims jwt.MapClaims) time.Time {
+	tokenDBLastAccess.Store(time.Now())
+
+	tokenID := tokenClaims["id"].(string)
+
+	exp, found := tokenDB.Load(tokenID)
+	if found {
+		return exp.(time.Time)
+	}
+
+	expiryClaim, err := tokenClaims.GetExpirationTime()
+	if err != nil {
+		panic(err)
+	}
+
+	return expiryClaim.Time
 }
 
 func IsTokenExpired(tokenClaims jwt.MapClaims) bool {
