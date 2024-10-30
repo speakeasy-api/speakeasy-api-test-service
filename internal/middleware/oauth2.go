@@ -31,7 +31,8 @@ func OAuth2(h http.Handler) http.Handler {
 		}
 
 		if auth.IsTokenExpired(claims) {
-			auth.SendOAuth2Error(w, auth.ErrCodeInvalidRequest, "token has expired")
+			w.Header().Set("Content-Type", "application/json")
+			http.Error(w, `{"error": "token has expired"}`, http.StatusUnauthorized)
 			return
 		}
 
