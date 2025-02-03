@@ -4,9 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
-var callCounts = map[string]int{}
+var (
+	callCounts      = map[string]int{}
+	callCountsMutex sync.Mutex
+)
 
 type retriesResponse struct {
 	Retries int `json:"retries"`
@@ -45,11 +49,13 @@ func HandleRetries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	callCountsMutex.Lock()
 	_, ok := callCounts[requestID]
 	if !ok {
 		callCounts[requestID] = 0
 	}
 	callCounts[requestID]++
+	callCountsMutex.Unlock()
 
 	if callCounts[requestID] < numRetries {
 		if retryAfter > 0 {
@@ -72,5 +78,7 @@ func HandleRetries(w http.ResponseWriter, r *http.Request) {
 	}
 	_, _ = w.Write(data)
 
+	callCountsMutex.Lock()
 	delete(callCounts, requestID)
+	callCountsMutex.Unlock()
 }
