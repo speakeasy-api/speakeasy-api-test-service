@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/acceptHeaders"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/clientcredentials"
@@ -87,6 +88,9 @@ func main() {
 	bind := ":8080"
 	if bindArg != nil {
 		bind = *bindArg
+		if !strings.HasPrefix(bind, ":") {
+			bind = ":" + bind
+		}
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

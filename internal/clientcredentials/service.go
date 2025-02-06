@@ -45,7 +45,7 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !slices.Contains(scopes, "read") || !slices.Contains(scopes, "write") {
+	if !slices.Contains(scopes, "read") && !slices.Contains(scopes, "write") {
 		http.Error(w, "invalid_scope", http.StatusBadRequest)
 		return
 	}
