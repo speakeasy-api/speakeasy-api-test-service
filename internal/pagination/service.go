@@ -26,6 +26,7 @@ type PaginationResponse struct {
 	NumPages    int           `json:"numPages"`
 	ResultArray []interface{} `json:"resultArray"`
 	Next        *string       `json:"next,omitempty"`
+	Cursor      *string       `json:"cursor"`
 }
 
 type PageInfo struct {
@@ -187,6 +188,8 @@ func HandleURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
+	limit := 15
+
 	queryCursor := r.FormValue("cursor")
 	var pagination NonNumericCursorRequest
 	hasBody := true
@@ -199,9 +202,16 @@ func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
 		NumPages:    0,
 		ResultArray: make([]interface{}, 0),
 	}
+
 	var cursorI, _ = hash(cursor)
-	for i := cursorI + 1; i < total && len(res.ResultArray) < 15; i++ {
+	for i := cursorI + 1; i < total && len(res.ResultArray) < limit; i++ {
 		res.ResultArray = append(res.ResultArray, unhash(i))
+	}
+
+	// output cursor to $.cursor in addition to $.resultArray[(@.length-1)]
+	if len(res.ResultArray) == limit {
+		cursor, _ := res.ResultArray[len(res.ResultArray)-1].(string)
+		res.Cursor = &cursor
 	}
 
 	w.Header().Set("Content-Type", "application/json")
