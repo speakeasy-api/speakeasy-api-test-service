@@ -24,6 +24,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-commit: "true"
+          skip-on-empty: "false"
           output-file: "false"
           create-summary: true
           preset: conventionalcommits
