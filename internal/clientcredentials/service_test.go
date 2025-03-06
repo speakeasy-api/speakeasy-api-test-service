@@ -87,11 +87,11 @@ func TestHandleTokenRequest(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "missing required scope in basic auth",
+			name: "unexpected scope in basic auth",
 			setupRequest: func() *http.Request {
 				form := url.Values{}
 				form.Set("grant_type", "client_credentials")
-				form.Set("scope", "read") // missing write scope
+				form.Set("scope", "unknown") // missing write scope
 
 				req := httptest.NewRequest(http.MethodPost, "/token", strings.NewReader(form.Encode()))
 				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
