@@ -1,6 +1,7 @@
 package clientcredentials
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"slices"
@@ -15,21 +16,57 @@ const (
 	secondAccessToken = "second-super-duper-access-token"
 )
 
+func handleBasicAuth(authHeader string) (clientID, clientSecret string, ok bool) {
+	// Remove "Basic " prefix (case-insensitive)
+	if !strings.HasPrefix(strings.ToLower(authHeader), "basic ") {
+		return "", "", false
+	}
+	encodedCreds := strings.TrimSpace(authHeader[6:])
+
+	// Decode base64
+	decodedCreds, err := base64.StdEncoding.DecodeString(strings.TrimSpace(encodedCreds))
+	if err != nil {
+		return "", "", false
+	}
+
+	// Split into username:password
+	creds := strings.SplitN(string(decodedCreds), ":", 2)
+	if len(creds) != 2 {
+		return "", "", false
+	}
+
+	return creds[0], creds[1], true
+}
+
+
 func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
+	var clientID, clientSecret string
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "invalid_request", http.StatusBadRequest)
 		return
 	}
 
+	// Check for Basic Auth header
+	if authHeader := r.Header.Get("Authorization"); strings.HasPrefix(strings.ToLower(authHeader), "basic ") {
+		var ok bool
+		clientID, clientSecret, ok = handleBasicAuth(authHeader)
+		if !ok {
+			http.Error(w, "invalid_client", http.StatusUnauthorized)
+			return
+		}
+	} else {
+		clientID = r.Form.Get("client_id")
+		clientSecret = r.Form.Get("client_secret")
+	}
 	grant_type := r.Form.Get("grant_type")
 	if grant_type != "client_credentials" {
 		http.Error(w, "invalid_grant", http.StatusBadRequest)
 		return
 	}
 
-	clientID := r.Form.Get("client_id")
-	clientSecret := r.Form.Get("client_secret")
+
+
 	if clientID == "" || clientSecret == "" {
 		http.Error(w, "invalid_request", http.StatusBadRequest)
 		return
