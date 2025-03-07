@@ -75,7 +75,6 @@ func main() {
 	r.HandleFunc("/method/post", method.HandlePost).Methods(http.MethodPost)
 	r.HandleFunc("/method/put", method.HandlePut).Methods(http.MethodPut)
 	r.HandleFunc("/method/trace", method.HandleTrace).Methods(http.MethodTrace)
-	
 	oauth2router := r.NewRoute().Subrouter()
 	oauth2router.Use(middleware.OAuth2)
 	oauth2router.HandleFunc("/ecommerce/products", ecommerce.HandleListProducts).Methods(http.MethodGet)
