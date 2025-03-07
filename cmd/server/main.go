@@ -58,9 +58,10 @@ func main() {
 	r.HandleFunc("/eventstreams/multiline", eventstreams.HandleEventStreamMultiLine).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/rich", eventstreams.HandleEventStreamRich).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/chat", eventstreams.HandleEventStreamChat).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/chat-flat", eventstreams.HandleEventStreamChatFlatten).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/chat-chunked", eventstreams.HandleEventStreamChat).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/differentdataschemas", eventstreams.HandleEventStreamDifferentDataSchemas).Methods(http.MethodPost)
-	r.HandleFunc("/eventstreams/differentdataschemasflatten", eventstreams.HandleEventStreamDifferentDataSchemasFlatten).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/differentdataschemas-flat", eventstreams.HandleEventStreamDifferentDataSchemasFlatten).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/alt/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
@@ -74,7 +75,7 @@ func main() {
 	r.HandleFunc("/method/post", method.HandlePost).Methods(http.MethodPost)
 	r.HandleFunc("/method/put", method.HandlePut).Methods(http.MethodPut)
 	r.HandleFunc("/method/trace", method.HandleTrace).Methods(http.MethodTrace)
-
+	
 	oauth2router := r.NewRoute().Subrouter()
 	oauth2router.Use(middleware.OAuth2)
 	oauth2router.HandleFunc("/ecommerce/products", ecommerce.HandleListProducts).Methods(http.MethodGet)

@@ -139,6 +139,32 @@ func HandleEventStreamChat(rw http.ResponseWriter, _ *http.Request) {
 	})
 }
 
+func HandleEventStreamChatFlatten(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			`data: {"content": "Hello"}`,
+		},
+
+		{
+			`data: {"content": " "}`,
+		},
+
+		{
+			`data: {"content": "world"}`,
+		},
+
+		{
+			`data: {"content": "!"}`,
+		},
+
+		{
+			`data: [DONE]`,
+		},
+	})
+}
+
 func HandleEventStreamChatChunked(rw http.ResponseWriter, _ *http.Request) {
 	rw.Header().Add("Content-Type", "text/event-stream")
 
