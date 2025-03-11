@@ -139,6 +139,32 @@ func HandleEventStreamChat(rw http.ResponseWriter, _ *http.Request) {
 	})
 }
 
+func HandleEventStreamChatFlatten(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			`data: {"content": "Hello"}`,
+		},
+
+		{
+			`data: {"content": " "}`,
+		},
+
+		{
+			`data: {"content": "world"}`,
+		},
+
+		{
+			`data: {"content": "!"}`,
+		},
+
+		{
+			`data: [DONE]`,
+		},
+	})
+}
+
 func HandleEventStreamChatChunked(rw http.ResponseWriter, _ *http.Request) {
 	rw.Header().Add("Content-Type", "text/event-stream")
 
@@ -152,6 +178,30 @@ func HandleEventStreamChatChunked(rw http.ResponseWriter, _ *http.Request) {
 }
 
 func HandleEventStreamDifferentDataSchemas(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			`id: event-1`,
+			`event: message`,
+			`data: {"content": "Here is your url"}`,
+		},
+
+		{
+			`id: event-2`,
+			`event: url`,
+			`data: {"url": "https://example.com"}`,
+		},
+
+		{
+			`id: event-3`,
+			`event: message`,
+			`data: {"content": "Have a great day!"}`,
+		},
+	})
+}
+
+func HandleEventStreamDifferentDataSchemasFlatten(rw http.ResponseWriter, _ *http.Request) {
 	rw.Header().Add("Content-Type", "text/event-stream")
 
 	pushEvents(rw, [][]string{
