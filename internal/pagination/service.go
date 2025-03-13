@@ -160,13 +160,13 @@ func HandleCursorResponseEnvelope(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	var lastItem *string
+	// conditionally set lastItem
 	if len(resultArray) > 0 {
 		idx := strconv.Itoa(resultArray[len(resultArray)-1].(int))
 		lastItem = &idx
 	} else {
 		lastItem = nil
 	}
-
 	res := PaginationResponseDeep{
 		PageInfo: PageInfo{
 			Next: lastItem,
