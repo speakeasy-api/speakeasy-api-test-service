@@ -123,21 +123,62 @@ func HandleCursor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cursor := getValue(queryCursor, hasBody, pagination.Cursor)
+	resultArray := make([]interface{}, 0)
 
-	res := PaginationResponse{
-		NumPages:    0,
-		ResultArray: make([]interface{}, 0),
-	}
-
-	for i := cursor + 1; i < total && len(res.ResultArray) < 15; i++ {
-		res.ResultArray = append(res.ResultArray, i)
+	for i := cursor + 1; i < total && len(resultArray) < 15; i++ {
+		resultArray = append(resultArray, i)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	res := PaginationResponse{
+		NumPages:    0,
+		ResultArray: resultArray,
+	}
+
 	err := json.NewEncoder(w).Encode(res)
 	if err != nil {
 		w.WriteHeader(500)
 	}
+
+}
+
+func HandleCursorResponseEnvelope(w http.ResponseWriter, r *http.Request) {
+	queryCursor := r.FormValue("cursor")
+
+	var pagination CursorRequest
+	hasBody := true
+	if err := json.NewDecoder(r.Body).Decode(&pagination); err != nil {
+		hasBody = false
+	}
+
+	cursor := getValue(queryCursor, hasBody, pagination.Cursor)
+	resultArray := make([]interface{}, 0)
+
+	for i := cursor + 1; i < total && len(resultArray) < 15; i++ {
+		resultArray = append(resultArray, i)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	var lastItem *string
+	if len(resultArray) > 0 {
+		idx := strconv.Itoa(resultArray[len(resultArray)-1].(int))
+		lastItem = &idx
+	} else {
+		lastItem = nil
+	}
+
+	res := PaginationResponseDeep{
+		PageInfo: PageInfo{
+			Next: lastItem,
+		},
+		ResultArray: resultArray,
+	}
+
+	err := json.NewEncoder(w).Encode(res)
+	if err != nil {
+		w.WriteHeader(500)
+	}
+
 }
 
 func HandleURL(w http.ResponseWriter, r *http.Request) {

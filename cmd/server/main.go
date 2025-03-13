@@ -44,6 +44,7 @@ func main() {
 	r.HandleFunc("/pagination/limitoffset/deep_outputs/page", pagination.HandleLimitOffsetDeepOutputsPage).Methods(http.MethodGet, http.MethodPut)
 	r.HandleFunc("/pagination/limitoffset/offset", pagination.HandleLimitOffsetOffset).Methods(http.MethodGet, http.MethodPut)
 	r.HandleFunc("/pagination/cursor", pagination.HandleCursor).Methods(http.MethodGet, http.MethodPut)
+	r.HandleFunc("/pagination/cursor/response_envelope", pagination.HandleCursorResponseEnvelope).Methods(http.MethodGet, http.MethodPut)
 	r.HandleFunc("/pagination/url", pagination.HandleURL).Methods(http.MethodGet)
 	r.HandleFunc("/pagination/cursor_non_numeric", pagination.HandleNonNumericCursor).Methods(http.MethodGet)
 	r.HandleFunc("/retries", retries.HandleRetries).Methods(http.MethodGet, http.MethodPost)
