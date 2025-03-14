@@ -12,6 +12,7 @@ import (
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/ecommerce"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/errors"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/eventstreams"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/jsonLines"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/method"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/middleware"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
@@ -63,6 +64,8 @@ func main() {
 	r.HandleFunc("/eventstreams/chat-chunked", eventstreams.HandleEventStreamChat).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/differentdataschemas", eventstreams.HandleEventStreamDifferentDataSchemas).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/differentdataschemas-flat", eventstreams.HandleEventStreamDifferentDataSchemasFlatten).Methods(http.MethodPost)
+	r.HandleFunc("/jsonl", jsonLines.HandleJSONLinesRich).Methods(http.MethodGet)
+	r.HandleFunc("/jsonl/chunks", jsonLines.HandleJSONLinesChunksRich).Methods(http.MethodGet)
 	r.HandleFunc("/clientcredentials/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/alt/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
