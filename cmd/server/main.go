@@ -20,6 +20,7 @@ import (
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/reflect"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/responseHeaders"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/retries"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/xNdJson"
 
 	"github.com/gorilla/mux"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/auth"
@@ -66,6 +67,8 @@ func main() {
 	r.HandleFunc("/eventstreams/differentdataschemas-flat", eventstreams.HandleEventStreamDifferentDataSchemasFlatten).Methods(http.MethodPost)
 	r.HandleFunc("/jsonl", jsonLines.HandleJSONLinesRich).Methods(http.MethodGet)
 	r.HandleFunc("/jsonl/chunks", jsonLines.HandleJSONLinesChunksRich).Methods(http.MethodGet)
+	r.HandleFunc("/x-ndjson", xNdJson.HandleXNdJsonLinesRich).Methods(http.MethodGet)
+	r.HandleFunc("/x-ndjson/chunks", xNdJson.HandleXNdJsonLinesChunksRich).Methods(http.MethodGet)
 	r.HandleFunc("/clientcredentials/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/authenticatedrequest", clientcredentials.HandleAuthenticatedRequest).Methods(http.MethodPost)
 	r.HandleFunc("/clientcredentials/alt/token", clientcredentials.HandleTokenRequest).Methods(http.MethodPost)
