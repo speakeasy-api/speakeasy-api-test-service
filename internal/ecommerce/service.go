@@ -3,7 +3,6 @@ package ecommerce
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -205,7 +204,7 @@ func HandleUpdateProductStock(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	scopes, scopesFound := middleware.OAuth2Scopes(r)
-	if !scopesFound || !scopes.Has([]string{"admin"}) {
+	if !scopesFound || !scopes.HasOneOf([]string{"admin", "producs:udpate"}) {
 		http.Error(rw, `{"error": "insufficient scopes"}`, http.StatusForbidden)
 		return
 	}
@@ -235,13 +234,10 @@ func HandleUpdateProductStock(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Seed cannot be 0 otherwise faker picks a random one
-	faker := gofakeit.New(productID + 1)
-
 	now := time.Now().Truncate(24 * time.Second)
 	if err := enc.Encode(ProductInventoryStatus{
 		ProductID: rawID,
-		Quantity:  faker.IntRange(int(math.Abs(float64(form.QuantityDelta))), 100) + form.QuantityDelta,
+		Quantity:  int(10*productID) + form.QuantityDelta,
 		UpdatedAt: now,
 	}); err != nil {
 		http.Error(rw, `{"error": "could not encode response"}`, http.StatusInternalServerError)
