@@ -54,3 +54,14 @@ func HandleJSONLinesRich(rw http.ResponseWriter, _ *http.Request) {
 		},
 	})
 }
+
+func HandleJsonLinesDeserializationVerification(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "application/jsonl")
+
+	pushEvents(rw, [][]string{
+		{
+			"{\"isFinished\": \"yes\"}\n",
+		},
+	})
+
+}
