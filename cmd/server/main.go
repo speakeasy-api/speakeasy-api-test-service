@@ -66,6 +66,7 @@ func main() {
 	r.HandleFunc("/eventstreams/differentdataschemas", eventstreams.HandleEventStreamDifferentDataSchemas).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/differentdataschemas-flat", eventstreams.HandleEventStreamDifferentDataSchemasFlatten).Methods(http.MethodPost)
 	r.HandleFunc("/jsonl", jsonLines.HandleJSONLinesRich).Methods(http.MethodGet)
+	r.HandleFunc("/jsonl/deserialization_verification", jsonLines.HandleJsonLinesDeserializationVerification).Methods(http.MethodGet)
 	r.HandleFunc("/jsonl/chunks", jsonLines.HandleJSONLinesChunksRich).Methods(http.MethodGet)
 	r.HandleFunc("/x-ndjson", xNdJson.HandleXNdJsonLinesRich).Methods(http.MethodGet)
 	r.HandleFunc("/x-ndjson/chunks", xNdJson.HandleXNdJsonLinesChunksRich).Methods(http.MethodGet)
