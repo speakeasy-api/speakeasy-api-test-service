@@ -87,3 +87,13 @@ func (s Scopes) Has(requiredScopes []string) bool {
 
 	return true
 }
+
+func (s Scopes) HasOneOf(allowedScopes []string) bool {
+	for _, scope := range allowedScopes {
+		if slices.Contains(s, scope) {
+			return true
+		}
+	}
+
+	return false
+}
