@@ -52,6 +52,7 @@ func main() {
 	r.HandleFunc("/retries", retries.HandleRetries).Methods(http.MethodGet, http.MethodPost)
 	r.HandleFunc("/retries/after", retries.HandleRetries).Methods(http.MethodGet)
 	r.HandleFunc("/errors/{status_code}", errors.HandleErrors).Methods(http.MethodGet, http.MethodPost)
+	r.HandleFunc("/errors/union/{tag}", errors.HandleErrorsUnion).Methods(http.MethodGet)
 	r.HandleFunc("/optional", acceptHeaders.HandleAcceptHeaderMultiplexing).Methods(http.MethodGet)
 	r.HandleFunc("/readonlyorwriteonly", readonlywriteonly.HandleReadOrWrite).Methods(http.MethodPost)
 	r.HandleFunc("/readonlyandwriteonly", readonlywriteonly.HandleReadAndWrite).Methods(http.MethodPost)
