@@ -41,6 +41,7 @@ func main() {
 		_, _ = w.Write([]byte("pong"))
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/requestbody", requestbody.HandleRequestBody).Methods(http.MethodPost)
+	r.HandleFunc("/requestbody/multipart-form/files", requestbody.HandleMultipartFormFiles).Methods(http.MethodPost)
 	r.HandleFunc("/vendorjson", responseHeaders.HandleVendorJsonResponseHeaders).Methods(http.MethodGet)
 	r.HandleFunc("/pagination/limitoffset/page", pagination.HandleLimitOffsetPage).Methods(http.MethodGet, http.MethodPut)
 	r.HandleFunc("/pagination/limitoffset/deep_outputs/page", pagination.HandleLimitOffsetDeepOutputsPage).Methods(http.MethodGet, http.MethodPut)
