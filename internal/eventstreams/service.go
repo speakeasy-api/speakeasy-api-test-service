@@ -224,3 +224,43 @@ func HandleEventStreamDifferentDataSchemasFlatten(rw http.ResponseWriter, _ *htt
 		},
 	})
 }
+
+func HandleEventStreamStayOpen(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+	rw.Header().Add("Cache-Control", "no-cache")
+	rw.Header().Add("Connection", "keep-alive")
+
+	// Send events 1, 2, 3 immediately
+	fmt.Fprintln(rw, "data: event 1")
+	fmt.Fprintln(rw, "")
+	fmt.Fprintln(rw, "data: event 2")
+	fmt.Fprintln(rw, "")
+	fmt.Fprintln(rw, "data: event 3")
+	fmt.Fprintln(rw, "")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+
+	// Wait 100ms then send event 4
+	time.Sleep(100 * time.Millisecond)
+	fmt.Fprintln(rw, "data: event 4")
+	fmt.Fprintln(rw, "")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+
+	// Wait another 100ms then send sentinel event
+	time.Sleep(100 * time.Millisecond)
+	fmt.Fprintln(rw, "data: [SENTINEL]")
+	fmt.Fprintln(rw, "")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+
+	// Keep the connection open until client closes
+	// Monitor the request context to detect when client disconnects
+	<-r.Context().Done()
+}
