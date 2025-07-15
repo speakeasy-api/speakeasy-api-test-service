@@ -17,12 +17,24 @@ type FaultSession struct {
 	Settings  FaultSettings
 }
 
+// Describes the fault injection settings for a session. The fault chain is
+// a series of fault injectors that are applied to the request in order. The
+// order of faults is:
+// - Delay
+// - ConnectionClose
+// - ConnectionReset
+// - Reject
+// - Error
 type FaultSettings struct {
-	// NOTE: The way these fields are ordered represents their precedence in the
-	// fault chain.
+	// Number of times to close the connection.
+	ConnectionCloseCount int `json:"connection_close_count"`
+
+	// ConnectionResetCount is the number of times to reset the connection.
+	ConnectionResetCount int `json:"connection_reset_count"`
 
 	// DelayMS is the number of milliseconds to delay the request.
 	DelayMS int64 `json:"delay_ms"`
+
 	// DelayCount is the number of times to delay the request.
 	DelayCount int `json:"delay_count"`
 
@@ -36,6 +48,7 @@ type FaultSettings struct {
 	// NOTE: Error injection only takes effect after all rejections have
 	// resolved if both of these injectors are enabled.
 	ErrorCount int `json:"error_count"`
+
 	// ErrorCode is the status code to return when the error injector is enabled.
 	ErrorCode int `json:"error_code"`
 }
@@ -81,6 +94,10 @@ func Fault(h http.Handler) http.Handler {
 
 		var faults []fault.Injector
 
+		// Since multiple injectors can be enabled, need to count the number of
+		// requests based on prior injector counts
+		countOffset := 0
+
 		if settings.DelayMS > 0 && reqCount < settings.DelayCount {
 			inj, err := fault.NewSlowInjector(time.Millisecond * time.Duration(settings.DelayMS))
 			if err != nil {
@@ -91,7 +108,20 @@ func Fault(h http.Handler) http.Handler {
 			faults = append(faults, inj)
 		}
 
-		countOffset := 0
+		// Delay injector does not increase the count offset.
+
+		if settings.ConnectionCloseCount > 0 && reqCount < settings.ConnectionCloseCount+countOffset {
+			faults = append(faults, &ConnectionErrorInjector{})
+		}
+
+		countOffset += settings.ConnectionCloseCount
+
+		if settings.ConnectionResetCount > 0 && reqCount < settings.ConnectionResetCount+countOffset {
+			faults = append(faults, &ConnectionErrorInjector{Reset: true})
+		}
+
+		countOffset += settings.ConnectionResetCount
+
 		if settings.RejectCount > 0 && reqCount < settings.RejectCount+countOffset {
 			inj, err := fault.NewRejectInjector()
 			if err != nil {
@@ -103,6 +133,7 @@ func Fault(h http.Handler) http.Handler {
 		}
 
 		countOffset += settings.RejectCount
+
 		if settings.ErrorCode > 0 && reqCount < (settings.ErrorCount+countOffset) {
 			inj, err := fault.NewErrorInjector(settings.ErrorCode, fault.WithStatusText("Injected error"))
 			if err != nil {
