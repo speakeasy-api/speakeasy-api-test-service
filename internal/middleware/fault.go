@@ -21,22 +21,18 @@ type FaultSession struct {
 // a series of fault injectors that are applied to the request in order. The
 // order of faults is:
 // - Delay
-// - ConnectionClose
-// - ConnectionReset
+// - Reset
 // - Reject
 // - Error
 type FaultSettings struct {
-	// Number of times to close the connection.
-	ConnectionCloseCount int `json:"connection_close_count"`
-
-	// ConnectionResetCount is the number of times to reset the connection.
-	ConnectionResetCount int `json:"connection_reset_count"`
-
 	// DelayMS is the number of milliseconds to delay the request.
 	DelayMS int64 `json:"delay_ms"`
 
 	// DelayCount is the number of times to delay the request.
 	DelayCount int `json:"delay_count"`
+
+	// ResetCount is the number of times to reset the connection.
+	ResetCount int `json:"reset_count"`
 
 	// RejectCount is the number of times to reject the request without a response.
 	// A value greater than 0 enables this fault injector.
@@ -110,17 +106,11 @@ func Fault(h http.Handler) http.Handler {
 
 		// Delay injector does not increase the count offset.
 
-		if settings.ConnectionCloseCount > 0 && reqCount < settings.ConnectionCloseCount+countOffset {
-			faults = append(faults, &ConnectionErrorInjector{})
+		if settings.ResetCount > 0 && reqCount < settings.ResetCount+countOffset {
+			faults = append(faults, &ConnectionResetInjector{})
 		}
 
-		countOffset += settings.ConnectionCloseCount
-
-		if settings.ConnectionResetCount > 0 && reqCount < settings.ConnectionResetCount+countOffset {
-			faults = append(faults, &ConnectionErrorInjector{Reset: true})
-		}
-
-		countOffset += settings.ConnectionResetCount
+		countOffset += settings.ResetCount
 
 		if settings.RejectCount > 0 && reqCount < settings.RejectCount+countOffset {
 			inj, err := fault.NewRejectInjector()
