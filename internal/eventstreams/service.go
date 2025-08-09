@@ -264,3 +264,85 @@ func HandleEventStreamStayOpen(rw http.ResponseWriter, r *http.Request) {
 	// Monitor the request context to detect when client disconnects
 	<-r.Context().Done()
 }
+
+func HandleEventStreamPartialWithComments(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	// Send the first packet with a partial message and a comment
+	fmt.Fprint(rw, ": This is a comment\n")
+	fmt.Fprint(rw, "data: {\"message\": \"Hello ")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+	
+	time.Sleep(100 * time.Millisecond)
+	
+	// Complete the first message with LF,LF boundary and add another comment
+	fmt.Fprint(rw, "from SSE\"}\n\n")
+	fmt.Fprint(rw, ": Another comment line\n")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+	
+	time.Sleep(100 * time.Millisecond)
+	
+	// Send a complete event with CR,CR boundary
+	fmt.Fprint(rw, "id: msg-2\n")
+	fmt.Fprint(rw, "event: update\n")
+	fmt.Fprint(rw, ": Comment before data\n")
+	fmt.Fprint(rw, "data: {\"status\": \"processing\", \"progress\": 50}\r\r")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+	
+	time.Sleep(100 * time.Millisecond)
+	
+	// Send with CR,LF,CR,LF boundary
+	fmt.Fprint(rw, ": This is a multiline\r\n")
+	fmt.Fprint(rw, ": comment that spans\r\n")
+	fmt.Fprint(rw, ": multiple lines\r\n")
+	fmt.Fprint(rw, "id: msg-3\r\n")
+	fmt.Fprint(rw, "data: {\"status\": \"complete\",\r\n")
+	fmt.Fprint(rw, "data:  \"progress\": 100,\r\n")
+	fmt.Fprint(rw, "data:  \"result\": \"Success\"}\r\n\r\n")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+	
+	time.Sleep(100 * time.Millisecond)
+	
+	// Mix boundaries within same message group - CR for lines, LF,LF for message end
+	fmt.Fprint(rw, ": Mixed line endings\r")
+	fmt.Fprint(rw, "event: mixed\n")
+	fmt.Fprint(rw, "id: msg-4\r")
+	fmt.Fprint(rw, "data: {\"test\": \"mixed boundaries\"}\n\n")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+	
+	time.Sleep(100 * time.Millisecond)
+	
+	// Another variant with CR,CR ending
+	fmt.Fprint(rw, "data: {\"another\": \"test\"}\r")
+	fmt.Fprint(rw, ": Comment with CR\r")
+	fmt.Fprint(rw, "id: msg-5\r\r")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+	
+	time.Sleep(100 * time.Millisecond)
+	
+	// Send a final comment and done signal with standard LF,LF
+	fmt.Fprint(rw, ": Stream ending\n")
+	fmt.Fprint(rw, "data: [DONE]\n\n")
+	
+	if f, ok := rw.(http.Flusher); ok {
+		f.Flush()
+	}
+}
