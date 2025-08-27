@@ -234,16 +234,7 @@ func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
 	if ok && len(vals) > 0 {
 		endCursor = &vals[0]
 	}
-	handleNonNumericCursorWithEndCursor(w, r, endCursor)
-}
 
-
-// handleNonNumericCursorWithEndCursor handles cursor-based pagination with non-numeric cursors.
-// Three cursor behaviors:
-// 1. If results fill the page limit, cursor is set to the last item
-// 2. If endCursor parameter is provided (including empty string), use that as cursor
-// 3. If no endCursor parameter and partial results, no cursor is set
-func handleNonNumericCursorWithEndCursor(w http.ResponseWriter, r *http.Request, endCursor *string) {
 	limit := 15
 
 	queryCursor := r.FormValue("cursor")
@@ -277,6 +268,7 @@ func handleNonNumericCursorWithEndCursor(w http.ResponseWriter, r *http.Request,
 		w.WriteHeader(500)
 	}
 }
+
 
 func HandleLimitOffsetDeepOutputsPage(w http.ResponseWriter, r *http.Request) {
 	queryLimit := r.FormValue("limit")
