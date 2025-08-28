@@ -229,6 +229,12 @@ func HandleURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
+	vals, ok := r.URL.Query()["endCursor"]
+	var endCursor *string
+	if ok && len(vals) > 0 {
+		endCursor = &vals[0]
+	}
+
 	limit := 15
 
 	queryCursor := r.FormValue("cursor")
@@ -249,10 +255,11 @@ func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
 		res.ResultArray = append(res.ResultArray, unhash(i))
 	}
 
-	// output cursor to $.cursor in addition to $.resultArray[(@.length-1)]
 	if len(res.ResultArray) == limit {
 		cursor, _ := res.ResultArray[len(res.ResultArray)-1].(string)
 		res.Cursor = &cursor
+	} else if endCursor != nil {
+		res.Cursor = endCursor
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -261,6 +268,7 @@ func HandleNonNumericCursor(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 	}
 }
+
 
 func HandleLimitOffsetDeepOutputsPage(w http.ResponseWriter, r *http.Request) {
 	queryLimit := r.FormValue("limit")
