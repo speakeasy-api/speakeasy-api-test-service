@@ -87,6 +87,11 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tokenType := r.URL.Query().Get("token_type")
+	if tokenType == "" {
+		tokenType = "Bearer" // default
+	}
+
 	accessToken := firstAccessToken
 
 	_, ok := state.Load(clientSecret)
@@ -106,7 +111,7 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 
 	response := tokenResponse{
 		AccessToken: accessToken,
-		TokenType:   "Bearer",
+		TokenType:   tokenType,
 		ExpiresIn:   0,
 	}
 
