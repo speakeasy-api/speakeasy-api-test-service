@@ -177,6 +177,75 @@ func HandleFetchProduct(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func HandleUpdateProduct(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	scopes, scopesFound := middleware.OAuth2Scopes(r)
+	if !scopesFound || !scopes.Has([]string{"products:read", "products:create"}) {
+		http.Error(rw, `{"error": "insufficient scopes"}`, http.StatusForbidden)
+		return
+	}
+
+	enc := json.NewEncoder(rw)
+	enc.SetIndent("", "  ")
+
+	vars := mux.Vars(r)
+	rawID, ok := vars["id"]
+	if !ok {
+		http.Error(rw, `{"error": "{id} is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	productID, err := strconv.ParseUint(rawID, 10, 64)
+	if err != nil {
+		http.Error(rw, `{"error": "{id} must a uint64"}`, http.StatusBadRequest)
+		return
+	}
+
+	var form ProductUpdateForm
+	err = json.NewDecoder(r.Body).Decode(&form)
+	if err != nil {
+		http.Error(rw, `{"error": "could not decode request"}`, http.StatusBadRequest)
+		return
+	}
+
+	// Seed cannot be 0 otherwise faker picks a random one
+	faker := gofakeit.New(productID + 1)
+	p := faker.Product()
+	created := faker.DateRange(
+		time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+	).Truncate(24 * time.Hour)
+	updated := faker.DateRange(
+		created,
+		time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+	).Truncate(24 * time.Hour)
+
+	name := p.Name
+	if form.Name != nil {
+		name = *form.Name
+	}
+	description := p.Description
+	if form.Description != nil {
+		description = *form.Description
+	}
+	price := p.Price
+	if form.Price != nil {
+		price = *form.Price
+	}
+
+	if err := enc.Encode(Product{
+		ID:          rawID,
+		Name:        name,
+		Price:       price,
+		Description: description,
+		CreatedAt:   created,
+		UpdatedAt:   updated,
+	}); err != nil {
+		http.Error(rw, `{"error": "could not encode response"}`, http.StatusInternalServerError)
+	}
+}
+
 func HandleDeleteProduct(rw http.ResponseWriter, r *http.Request) {
 	scopes, scopesFound := middleware.OAuth2Scopes(r)
 	if !scopesFound || !scopes.Has([]string{"products:delete"}) {
