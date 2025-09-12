@@ -17,6 +17,7 @@ import (
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/middleware"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/pagination"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/readonlywriteonly"
+	"github.com/speakeasy-api/speakeasy-api-test-service/internal/redirects"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/reflect"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/responseHeaders"
 	"github.com/speakeasy-api/speakeasy-api-test-service/internal/retries"
@@ -86,6 +87,8 @@ func main() {
 	r.HandleFunc("/method/post", method.HandlePost).Methods(http.MethodPost)
 	r.HandleFunc("/method/put", method.HandlePut).Methods(http.MethodPut)
 	r.HandleFunc("/method/trace", method.HandleTrace).Methods(http.MethodTrace)
+	r.HandleFunc("/followRedirect/oldPage", redirects.HandleRedirectOldPage).Methods(http.MethodGet)
+	r.HandleFunc("/followRedirect/newPage", redirects.HandleRedirectNewPage).Methods(http.MethodGet)
 
 	oauth2router := r.NewRoute().Subrouter()
 	oauth2router.Use(middleware.OAuth2)
