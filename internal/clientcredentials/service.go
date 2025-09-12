@@ -109,7 +109,7 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	response := tokenResponse{
 		AccessToken: accessToken,
 		TokenType:   tokenType,
-		ExpiresIn:   120,
+		ExpiresIn:   0,
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
