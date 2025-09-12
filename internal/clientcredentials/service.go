@@ -38,7 +38,6 @@ func handleBasicAuth(authHeader string) (clientID, clientSecret string, ok bool)
 	return creds[0], creds[1], true
 }
 
-
 func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	var clientID, clientSecret string
 	err := r.ParseForm()
@@ -64,8 +63,6 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid_grant", http.StatusBadRequest)
 		return
 	}
-
-
 
 	if clientID == "" || clientSecret == "" {
 		http.Error(w, "invalid_request", http.StatusBadRequest)
@@ -112,7 +109,7 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	response := tokenResponse{
 		AccessToken: accessToken,
 		TokenType:   tokenType,
-		ExpiresIn:   0,
+		ExpiresIn:   120,
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

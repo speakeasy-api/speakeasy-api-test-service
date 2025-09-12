@@ -22,10 +22,10 @@ type NewProductForm struct {
 	Price       float64 `json:"price"`
 }
 
-type ProductForm struct {
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
+type ProductUpdateForm struct {
+	Name        *string  `json:"name"`
+	Description *string  `json:"description"`
+	Price       *float64 `json:"price"`
 }
 
 type ProductInventoryUpdateForm struct {

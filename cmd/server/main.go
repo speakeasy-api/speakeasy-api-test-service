@@ -95,6 +95,7 @@ func main() {
 	oauth2router.HandleFunc("/ecommerce/products", ecommerce.HandleListProducts).Methods(http.MethodGet)
 	oauth2router.HandleFunc("/ecommerce/products", ecommerce.HandleCreateProduct).Methods(http.MethodPost)
 	oauth2router.HandleFunc("/ecommerce/products/{id}", ecommerce.HandleFetchProduct).Methods(http.MethodGet)
+	oauth2router.HandleFunc("/ecommerce/products/{id}", ecommerce.HandleUpdateProduct).Methods(http.MethodPut)
 	oauth2router.HandleFunc("/ecommerce/products/{id}", ecommerce.HandleDeleteProduct).Methods(http.MethodDelete)
 	oauth2router.HandleFunc("/ecommerce/products/{id}/inventory", ecommerce.HandleUpdateProductStock).Methods(http.MethodPut)
 
