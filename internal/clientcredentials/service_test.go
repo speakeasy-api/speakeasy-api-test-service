@@ -55,7 +55,7 @@ func TestHandleTokenRequest(t *testing.T) {
 		{
 			name: "invalid basic auth format",
 			setupRequest: func() *http.Request {
-				req := httptest.NewRequest(http.MethodPost, "/token", nil)
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token", nil)
 				req.Header.Set("Authorization", "Basic invalid-base64")
 				return req
 			},
@@ -64,7 +64,7 @@ func TestHandleTokenRequest(t *testing.T) {
 		{
 			name: "missing credentials in basic auth",
 			setupRequest: func() *http.Request {
-				req := httptest.NewRequest(http.MethodPost, "/token", nil)
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token", nil)
 				// Encode just username without password
 				creds := base64.StdEncoding.EncodeToString([]byte("speakeasy-sdks"))
 				req.Header.Set("Authorization", fmt.Sprintf("Basic %s", creds))

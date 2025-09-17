@@ -105,6 +105,7 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		var err error
 		if expiresIn, err = strconv.Atoi(expiresInStr); err != nil {
 			http.Error(w, "invalid_query", http.StatusBadRequest)
+			return
 		}
 	}
 
