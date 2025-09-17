@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -38,6 +39,15 @@ func handleBasicAuth(authHeader string) (clientID, clientSecret string, ok bool)
 	return creds[0], creds[1], true
 }
 
+// Generate a fake access token for valid client credentials.
+// Supports both Basic Auth and form-encoded client_id/client_secret
+// Valid Credentials:
+// - client_id: "speakeasy-sdks"
+// - client_secret: "supersecret-<anything>"
+//
+// Optional Query Parameters:
+// - token_type: defaults to "Bearer"
+// - expires_in: defaults to 0 (already expired)
 func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	var clientID, clientSecret string
 	err := r.ParseForm()
@@ -89,6 +99,15 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 		tokenType = "Bearer" // default
 	}
 
+	expiresIn := 0 // default
+	expiresInStr := r.URL.Query().Get("expires_in")
+	if expiresInStr != "" {
+		var err error
+		if expiresIn, err = strconv.Atoi(expiresInStr); err != nil {
+			http.Error(w, "invalid_query", http.StatusBadRequest)
+		}
+	}
+
 	accessToken := firstAccessToken
 
 	_, ok := state.Load(clientSecret)
@@ -109,7 +128,7 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	response := tokenResponse{
 		AccessToken: accessToken,
 		TokenType:   tokenType,
-		ExpiresIn:   0,
+		ExpiresIn:   expiresIn,
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

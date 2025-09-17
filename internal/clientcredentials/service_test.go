@@ -12,9 +12,9 @@ import (
 
 func TestHandleTokenRequest(t *testing.T) {
 	tests := []struct {
-		name           string
-		setupRequest   func() *http.Request
-		wantStatus     int
+		name            string
+		setupRequest    func() *http.Request
+		wantStatus      int
 		wantAccessToken string
 	}{
 		{
@@ -26,11 +26,11 @@ func TestHandleTokenRequest(t *testing.T) {
 				form.Set("client_secret", "supersecret-123")
 				form.Set("scope", "read write")
 
-				req := httptest.NewRequest(http.MethodPost, "/token", strings.NewReader(form.Encode()))
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token", strings.NewReader(form.Encode()))
 				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 				return req
 			},
-			wantStatus:     http.StatusOK,
+			wantStatus:      http.StatusOK,
 			wantAccessToken: firstAccessToken,
 		},
 		{
@@ -40,7 +40,7 @@ func TestHandleTokenRequest(t *testing.T) {
 				form.Set("grant_type", "client_credentials")
 				form.Set("scope", "read write")
 
-				req := httptest.NewRequest(http.MethodPost, "/token", strings.NewReader(form.Encode()))
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token", strings.NewReader(form.Encode()))
 				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 				// Create basic auth header
@@ -49,7 +49,7 @@ func TestHandleTokenRequest(t *testing.T) {
 
 				return req
 			},
-			wantStatus:     http.StatusOK,
+			wantStatus:      http.StatusOK,
 			wantAccessToken: firstAccessToken,
 		},
 		{
@@ -77,7 +77,7 @@ func TestHandleTokenRequest(t *testing.T) {
 			setupRequest: func() *http.Request {
 				form := url.Values{}
 				form.Set("grant_type", "client_credentials")
-				req := httptest.NewRequest(http.MethodPost, "/token", strings.NewReader(form.Encode()))
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token", strings.NewReader(form.Encode()))
 				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 				creds := base64.StdEncoding.EncodeToString([]byte("wrong:wrong"))
 				req.Header.Set("Authorization", fmt.Sprintf("Basic %s", creds))
@@ -93,7 +93,7 @@ func TestHandleTokenRequest(t *testing.T) {
 				form.Set("grant_type", "client_credentials")
 				form.Set("scope", "unknown") // missing write scope
 
-				req := httptest.NewRequest(http.MethodPost, "/token", strings.NewReader(form.Encode()))
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token", strings.NewReader(form.Encode()))
 				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 				creds := base64.StdEncoding.EncodeToString([]byte("speakeasy-sdks:supersecret-123"))
@@ -110,7 +110,7 @@ func TestHandleTokenRequest(t *testing.T) {
 				form.Set("grant_type", "client_credentials")
 				form.Set("scope", "read write")
 
-				req := httptest.NewRequest(http.MethodPost, "/token", strings.NewReader(form.Encode()))
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token", strings.NewReader(form.Encode()))
 				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 				creds := base64.StdEncoding.EncodeToString([]byte("speakeasy-sdks:supersecret-123"))
@@ -118,7 +118,41 @@ func TestHandleTokenRequest(t *testing.T) {
 
 				return req
 			},
-			wantStatus:     http.StatusOK,
+			wantStatus:      http.StatusOK,
+			wantAccessToken: firstAccessToken,
+		},
+		{
+			name: "Non-expired token",
+			setupRequest: func() *http.Request {
+				form := url.Values{}
+				form.Set("grant_type", "client_credentials")
+				form.Set("client_id", "speakeasy-sdks")
+				form.Set("client_secret", "supersecret-123")
+				form.Set("scope", "read write")
+
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token?expires_in=60", strings.NewReader(form.Encode()))
+				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+				return req
+			},
+			wantStatus:      http.StatusOK,
+			wantAccessToken: firstAccessToken,
+		},
+		{
+			name: "custom token type",
+			setupRequest: func() *http.Request {
+				form := url.Values{}
+				form.Set("grant_type", "client_credentials")
+				form.Set("client_id", "speakeasy-sdks")
+				form.Set("client_secret", "supersecret-123")
+				form.Set("scope", "read write")
+
+				req := httptest.NewRequest(http.MethodPost, "/clientcredentials/token?token_type=custom", strings.NewReader(form.Encode()))
+				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+				return req
+			},
+			wantStatus:      http.StatusOK,
 			wantAccessToken: firstAccessToken,
 		},
 	}
@@ -135,6 +169,20 @@ func TestHandleTokenRequest(t *testing.T) {
 			if tt.wantStatus == http.StatusOK {
 				if !strings.Contains(w.Body.String(), tt.wantAccessToken) {
 					t.Errorf("HandleTokenRequest() response doesn't contain expected access token")
+				}
+
+				// Check expires_in query parameter
+				if tt.name == "Non-expired token" {
+					if !strings.Contains(w.Body.String(), `"expires_in":60`) {
+						t.Errorf("HandleTokenRequest() response doesn't contain expected expires_in value")
+					}
+				}
+
+				// Check token_type query parameter
+				if tt.name == "custom token type" {
+					if !strings.Contains(w.Body.String(), `"token_type":"custom"`) {
+						t.Errorf("HandleTokenRequest() response doesn't contain expected token_type value")
+					}
 				}
 			}
 		})
