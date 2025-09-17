@@ -104,7 +104,7 @@ func HandleTokenRequest(w http.ResponseWriter, r *http.Request) {
 	if expiresInStr != "" {
 		var err error
 		if expiresIn, err = strconv.Atoi(expiresInStr); err != nil {
-			http.Error(w, "invalid_query", http.StatusBadRequest)
+			http.Error(w, "could not convert expires_in query parameter to integer", http.StatusBadRequest)
 			return
 		}
 	}
