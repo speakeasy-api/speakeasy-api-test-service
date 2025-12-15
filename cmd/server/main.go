@@ -69,6 +69,7 @@ func main() {
 	r.HandleFunc("/eventstreams/differentdataschemas-flat", eventstreams.HandleEventStreamDifferentDataSchemasFlatten).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/stayopen", eventstreams.HandleEventStreamStayOpen).Methods(http.MethodPost)
 	r.HandleFunc("/eventstreams/partial-with-comments", eventstreams.HandleEventStreamPartialWithComments).Methods(http.MethodPost)
+	r.HandleFunc("/eventstreams/optionaldata", eventstreams.HandleEventStreamOptionalData).Methods(http.MethodPost)
 	r.HandleFunc("/jsonl", jsonLines.HandleJSONLinesRich).Methods(http.MethodGet)
 	r.HandleFunc("/jsonl/deserialization_verification", jsonLines.HandleJsonLinesDeserializationVerification).Methods(http.MethodGet)
 	r.HandleFunc("/jsonl/chunks", jsonLines.HandleJSONLinesChunksRich).Methods(http.MethodGet)

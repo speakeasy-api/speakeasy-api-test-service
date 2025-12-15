@@ -237,7 +237,7 @@ func HandleEventStreamStayOpen(rw http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(rw, "")
 	fmt.Fprintln(rw, "data: event 3")
 	fmt.Fprintln(rw, "")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
@@ -246,7 +246,7 @@ func HandleEventStreamStayOpen(rw http.ResponseWriter, r *http.Request) {
 	time.Sleep(100 * time.Millisecond)
 	fmt.Fprintln(rw, "data: event 4")
 	fmt.Fprintln(rw, "")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
@@ -255,7 +255,7 @@ func HandleEventStreamStayOpen(rw http.ResponseWriter, r *http.Request) {
 	time.Sleep(100 * time.Millisecond)
 	fmt.Fprintln(rw, "data: [SENTINEL]")
 	fmt.Fprintln(rw, "")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
@@ -271,35 +271,35 @@ func HandleEventStreamPartialWithComments(rw http.ResponseWriter, _ *http.Reques
 	// Send the first packet with a partial message and a comment
 	fmt.Fprint(rw, ": This is a comment\n")
 	fmt.Fprint(rw, "data: {\"message\": \"Hello ")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
-	
+
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// Complete the first message with LF,LF boundary and add another comment
 	fmt.Fprint(rw, "from SSE\"}\n\n")
 	fmt.Fprint(rw, ": Another comment line\n")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
-	
+
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// Send a complete event with CR,CR boundary
 	fmt.Fprint(rw, "id: msg-2\n")
 	fmt.Fprint(rw, "event: update\n")
 	fmt.Fprint(rw, ": Comment before data\n")
 	fmt.Fprint(rw, "data: {\"status\": \"processing\", \"progress\": 50}\r\r")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
-	
+
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// Send with CR,LF,CR,LF boundary
 	fmt.Fprint(rw, ": This is a multiline\r\n")
 	fmt.Fprint(rw, ": comment that spans\r\n")
@@ -308,41 +308,80 @@ func HandleEventStreamPartialWithComments(rw http.ResponseWriter, _ *http.Reques
 	fmt.Fprint(rw, "data: {\"status\": \"complete\",\r\n")
 	fmt.Fprint(rw, "data:  \"progress\": 100,\r\n")
 	fmt.Fprint(rw, "data:  \"result\": \"Success\"}\r\n\r\n")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
-	
+
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// Mix boundaries within same message group - CR for lines, LF,LF for message end
 	fmt.Fprint(rw, ": Mixed line endings\r")
 	fmt.Fprint(rw, "event: mixed\n")
 	fmt.Fprint(rw, "id: msg-4\r")
 	fmt.Fprint(rw, "data: {\"test\": \"mixed boundaries\"}\n\n")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
-	
+
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// Another variant with CR,CR ending
 	fmt.Fprint(rw, "data: {\"another\": \"test\"}\r")
 	fmt.Fprint(rw, ": Comment with CR\r")
 	fmt.Fprint(rw, "id: msg-5\r\r")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
-	
+
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// Send a final comment and done signal with standard LF,LF
 	fmt.Fprint(rw, ": Stream ending\n")
 	fmt.Fprint(rw, "data: [DONE]\n\n")
-	
+
 	if f, ok := rw.(http.Flusher); ok {
 		f.Flush()
 	}
+}
+
+func HandleEventStreamOptionalData(rw http.ResponseWriter, _ *http.Request) {
+	rw.Header().Add("Content-Type", "text/event-stream")
+
+	pushEvents(rw, [][]string{
+		{
+			// Event with data field present
+			`event: message`,
+			`data: {"content": "Hello, this event has data"}`,
+			`id: event-1`,
+		},
+
+		{
+			// Event without data field (data is optional)
+			`event: heartbeat`,
+			`id: event-2`,
+		},
+
+		{
+			// Event with data field present
+			`event: message`,
+			`data: {"content": "Another message with data"}`,
+			`id: event-3`,
+		},
+
+		{
+			// Event without data field (data is optional)
+			`event: ping`,
+			`id: event-4`,
+		},
+
+		{
+			// Final event with data
+			`event: complete`,
+			`data: {"content": "Stream finished"}`,
+			`id: event-5`,
+		},
+	})
 }
